@@ -1,3 +1,5 @@
+
+
 {
   "compilerOptions": {
     "target": "ES2017",
@@ -7,8 +9,8 @@
     "strict": true,
     "noEmit": true,
     "esModuleInterop": true,
-    "module": "esnext",
-    "moduleResolution": "node",
+    "module": "nodenext",
+    "moduleResolution": "nodenext",
     "resolveJsonModule": true,
     "isolatedModules": true,
     "jsx": "preserve",
