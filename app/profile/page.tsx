@@ -1,14 +1,14 @@
 
-// app/profile/page.tsx
+
 "use client";
 
-import { useUser } from "@clerk/nextjs";
-import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
-import { availablePlans, Plan } from "@/lib/plans"; // Adjust the path based on your project structure
-import Image from "next/image";
 import { useState } from "react";
-import toast, { Toaster } from "react-hot-toast";
+import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
+import { availablePlans, Plan } from "@/lib/plans"; // Ensure this path is correct
+import Image from "next/image";
+import { useUser } from "@clerk/nextjs";
 import { useRouter } from "next/navigation";
+import toast, { Toaster } from "react-hot-toast";
 import { Spinner } from "@/components/spinner";
 
 const normalizeTier = (tier: string) => {
@@ -27,6 +27,26 @@ const normalizeTier = (tier: string) => {
   }
 };
 
+// API response type for subscription-status endpoint
+interface SubscriptionData {
+  subscription: {
+    subscription_tier: string;
+    subscription_active: boolean;
+  } | null;
+}
+
+// API response type for change-plan endpoint
+interface ChangePlanResponse {
+  success: boolean;
+  message?: string;
+}
+
+// API response type for unsubscribe endpoint
+interface UnsubscribeResponse {
+  success: boolean;
+  message?: string;
+}
+
 export default function ProfilePage() {
   const { isLoaded, isSignedIn, user } = useUser();
   const queryClient = useQueryClient();
@@ -39,7 +59,7 @@ export default function ProfilePage() {
     isLoading,
     isError,
     error,
-  } = useQuery({
+  } = useQuery<SubscriptionData, Error>({
     queryKey: ["subscription"],
     queryFn: async () => {
       const res = await fetch("/api/profile/subscription-status");
@@ -53,29 +73,14 @@ export default function ProfilePage() {
     staleTime: 5 * 60 * 1000,
   });
 
-  console.log("Full subscription data:", subscription);
-  console.log(
-    "Subscription tier from API:",
-    subscription?.subscription?.subscription_tier
-  );
-
+  // Normalize subscription tier string
   const rawTier = subscription?.subscription?.subscription_tier || "";
-
   const tier = normalizeTier(rawTier);
 
-  // FIX: Match by priceId if available, else fallback to interval match
-  
-    const currentPlan = availablePlans.find((plan) => plan.interval === tier);
+  // Find current plan by interval matching tier
+  const currentPlan = availablePlans.find((plan) => plan.interval === tier);
 
-
-    // app/profile/page.tsx
-
-
-    console.log("rawTier:", rawTier);
-console.log("tier:", tier);
-console.log("currentPlan:", currentPlan);
-console.log("availablePlans:", availablePlans);
-  const changePlanMutation = useMutation<any, Error, string>({
+  const changePlanMutation = useMutation<ChangePlanResponse, Error, string>({
     mutationFn: async (newPlan: string) => {
       const res = await fetch("/api/profile/change-plan", {
         method: "POST",
@@ -95,13 +100,14 @@ console.log("availablePlans:", availablePlans);
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ["subscription"] });
       toast.success("Subscription plan updated successfully.");
+      setSelectedPlan(""); // reset selection
     },
     onError: (error) => {
       toast.error(error.message);
     },
   });
 
-  const unsubscribeMutation = useMutation<any, Error, void>({
+  const unsubscribeMutation = useMutation<UnsubscribeResponse, Error, void>({
     mutationFn: async () => {
       const res = await fetch("/api/profile/unsubscribe", {
         method: "POST",
@@ -124,7 +130,6 @@ console.log("availablePlans:", availablePlans);
   const handleConfirmChangePlan = () => {
     if (selectedPlan) {
       changePlanMutation.mutate(selectedPlan);
-      setSelectedPlan("");
     }
   };
 
@@ -162,6 +167,11 @@ console.log("availablePlans:", availablePlans);
     );
   }
 
+  const isChangingPlan = changePlanMutation.status === "pending";
+const isUnsubscribing = unsubscribeMutation.status === "pending";
+
+
+
   return (
     <div className="min-h-screen flex items-center justify-center bg-emerald-100 p-4">
       <Toaster position="top-center" />
@@ -169,16 +179,16 @@ console.log("availablePlans:", availablePlans);
         <div className="flex flex-col md:flex-row">
           <div className="w-full md:w-1/3 p-6 bg-emerald-500 text-white flex flex-col items-center">
             <Image
-              src={user.imageUrl || "/default-avatar.png"}
+              src={user?.imageUrl || "/default-avatar.png"}
               alt="User Avatar"
               width={100}
               height={100}
               className="rounded-full mb-4"
             />
             <h1 className="text-2xl font-bold mb-2">
-              {user.firstName} {user.lastName}
+              {user?.firstName} {user?.lastName}
             </h1>
-            <p className="mb-4">{user.primaryEmailAddress?.emailAddress}</p>
+            <p className="mb-4">{user?.primaryEmailAddress?.emailAddress}</p>
           </div>
 
           <div className="w-full md:w-2/3 p-6 bg-gray-50">
@@ -193,7 +203,7 @@ console.log("availablePlans:", availablePlans);
               </div>
             ) : isError ? (
               <p className="text-red-500">{error?.message}</p>
-            ) : subscription ? (
+            ) : subscription?.subscription ? (
               <div className="space-y-6">
                 <div className="bg-white shadow-md rounded-lg p-4 border border-emerald-200">
                   <h3 className="text-xl font-semibold mb-2 text-emerald-600">
@@ -210,14 +220,14 @@ console.log("availablePlans:", availablePlans);
                       </p>
                       <p>
                         <strong>Status:</strong>{" "}
-                       
-{subscription?.subscription?.subscription_active ? "ACTIVE" : "INACTIVE"}
-
-
+                        {subscription.subscription.subscription_active
+                          ? "ACTIVE"
+                          : "INACTIVE"}
                       </p>
-                       <p>
-        <strong>Tier:</strong> {subscription?.subscription?.subscription_tier || "None"}
-      </p>
+                      <p>
+                        <strong>Tier:</strong>{" "}
+                        {subscription.subscription.subscription_tier || "None"}
+                      </p>
                     </>
                   ) : (
                     <p className="text-red-500">Current plan not found.</p>
@@ -230,9 +240,9 @@ console.log("availablePlans:", availablePlans);
                   </h3>
                   <select
                     onChange={handleChangePlan}
-                    defaultValue={currentPlan?.interval}
+                    value={selectedPlan || currentPlan?.interval || ""}
                     className="w-full px-3 py-2 border border-emerald-300 rounded-md text-black focus:outline-none focus:ring-2 focus:ring-emerald-400"
-                    disabled={changePlanMutation.isPending}
+                    disabled={isChangingPlan}
                   >
                     <option value="" disabled>
                       Select a new plan
@@ -245,11 +255,12 @@ console.log("availablePlans:", availablePlans);
                   </select>
                   <button
                     onClick={handleConfirmChangePlan}
-                    className="mt-3 p-2 bg-emerald-500 rounded-lg text-white"
+                    disabled={isChangingPlan || !selectedPlan}
+                    className="mt-3 p-2 bg-emerald-500 rounded-lg text-white disabled:opacity-50 disabled:cursor-not-allowed"
                   >
                     Save Change
                   </button>
-                  {changePlanMutation.isPending && (
+                  {isChangingPlan && (
                     <div className="flex items-center mt-2">
                       <Spinner />
                       <span className="ml-2">Updating plan...</span>
@@ -263,16 +274,12 @@ console.log("availablePlans:", availablePlans);
                   </h3>
                   <button
                     onClick={handleUnsubscribe}
-                    disabled={unsubscribeMutation.isPending}
+                    disabled={isUnsubscribing}
                     className={`w-full bg-red-500 text-white py-2 px-4 rounded-md hover:bg-red-600 transition-colors ${
-                      unsubscribeMutation.isPending
-                        ? "opacity-50 cursor-not-allowed"
-                        : ""
+                      isUnsubscribing ? "opacity-50 cursor-not-allowed" : ""
                     }`}
                   >
-                    {unsubscribeMutation.isPending
-                      ? "Unsubscribing..."
-                      : "Unsubscribe"}
+                    {isUnsubscribing ? "Unsubscribing..." : "Unsubscribe"}
                   </button>
                 </div>
               </div>
@@ -285,4 +292,3 @@ console.log("availablePlans:", availablePlans);
     </div>
   );
 }
-

@@ -1,6 +1,6 @@
 
 
- "use client";
+"use client";
 
 import { useState, useEffect } from "react";
 import { useMutation } from "@tanstack/react-query";
@@ -63,7 +63,9 @@ export default function MealPlanDashboard() {
 
     async function checkSubscription(userId: string) {
       try {
-        const res = await fetch(`/api/check-subscription?userId=${encodeURIComponent(userId)}`);
+        const res = await fetch(
+          `/api/check-subscription?userId=${encodeURIComponent(userId)}`
+        );
         const data = await res.json();
 
         if (!data.subscriptionActive) {
@@ -97,6 +99,9 @@ export default function MealPlanDashboard() {
     },
   });
 
+  // Determine loading by mutation status
+  const isLoading = mutation.status === "pending";
+
   if (loading || !isLoaded) {
     return (
       <div className="flex items-center justify-center h-screen">
@@ -106,8 +111,7 @@ export default function MealPlanDashboard() {
   }
 
   const getMealPlanForDay = (day: string): DailyMealPlan | undefined => {
-    if (!mutation.data?.mealPlan) return undefined;
-    return mutation.data.mealPlan[day];
+    return mutation.data?.mealPlan?.[day];
   };
 
   const handleSubmit = (e: React.FormEvent) => {
@@ -130,11 +134,16 @@ export default function MealPlanDashboard() {
       <div className="w-full max-w-6xl flex flex-col md:flex-row bg-white shadow-lg rounded-lg overflow-hidden">
         {/* Left Panel */}
         <div className="w-full md:w-1/3 lg:w-1/4 p-6 bg-emerald-500 text-white">
-          <h1 className="text-2xl font-bold mb-6 text-center">AI Meal Plan Generator</h1>
+          <h1 className="text-2xl font-bold mb-6 text-center">
+            AI Meal Plan Generator
+          </h1>
           <form onSubmit={handleSubmit} className="space-y-4">
             {/* Diet Type */}
             <div>
-              <label htmlFor="dietType" className="block text-sm font-medium mb-1">
+              <label
+                htmlFor="dietType"
+                className="block text-sm font-medium mb-1"
+              >
                 Diet Type
               </label>
               <input
@@ -150,7 +159,10 @@ export default function MealPlanDashboard() {
 
             {/* Calories */}
             <div>
-              <label htmlFor="calories" className="block text-sm font-medium mb-1">
+              <label
+                htmlFor="calories"
+                className="block text-sm font-medium mb-1"
+              >
                 Daily Calorie Goal
               </label>
               <input
@@ -168,7 +180,10 @@ export default function MealPlanDashboard() {
 
             {/* Allergies */}
             <div>
-              <label htmlFor="allergies" className="block text-sm font-medium mb-1">
+              <label
+                htmlFor="allergies"
+                className="block text-sm font-medium mb-1"
+              >
                 Allergies or Restrictions
               </label>
               <input
@@ -183,7 +198,10 @@ export default function MealPlanDashboard() {
 
             {/* Cuisine */}
             <div>
-              <label htmlFor="cuisine" className="block text-sm font-medium mb-1">
+              <label
+                htmlFor="cuisine"
+                className="block text-sm font-medium mb-1"
+              >
                 Preferred Cuisine
               </label>
               <input
@@ -205,7 +223,10 @@ export default function MealPlanDashboard() {
                 onChange={(e) => setSnacks(e.target.checked)}
                 className="h-4 w-4 text-emerald-300 border-emerald-300 rounded"
               />
-              <label htmlFor="snacks" className="ml-2 block text-sm text-white">
+              <label
+                htmlFor="snacks"
+                className="ml-2 block text-sm text-white"
+              >
                 Include Snacks
               </label>
             </div>
@@ -214,14 +235,14 @@ export default function MealPlanDashboard() {
             <div>
               <button
                 type="submit"
-                disabled={mutation.isPending}
+                disabled={isLoading}
                 className={`w-full bg-emerald-500 text-white py-2 px-4 rounded-md transition-all duration-200 ${
-                  mutation.isPending
+                  isLoading
                     ? "opacity-50 cursor-not-allowed"
                     : "hover:bg-emerald-600 hover:shadow-lg hover:scale-[1.02]"
                 }`}
               >
-                {mutation.isPending ? "Generating..." : "Generate Meal Plan"}
+                {isLoading ? "Generating..." : "Generate Meal Plan"}
               </button>
             </div>
           </form>
@@ -235,9 +256,11 @@ export default function MealPlanDashboard() {
 
         {/* Right Panel */}
         <div className="w-full md:w-2/3 lg:w-3/4 p-6 bg-gray-50">
-          <h2 className="text-2xl font-bold mb-6 text-emerald-700">Weekly Meal Plan</h2>
+          <h2 className="text-2xl font-bold mb-6 text-emerald-700">
+            Weekly Meal Plan
+          </h2>
 
-          {mutation.isSuccess && mutation.data.mealPlan ? (
+          {mutation.isSuccess && mutation.data?.mealPlan ? (
             <div className="h-[600px] overflow-y-auto">
               <div className="space-y-6">
                 {daysOfWeek.map((day) => {
@@ -247,7 +270,9 @@ export default function MealPlanDashboard() {
                       key={day}
                       className="bg-white shadow-md rounded-lg p-4 border border-emerald-200 transition-all duration-200 hover:shadow-lg hover:border-emerald-400 hover:bg-emerald-50"
                     >
-                      <h3 className="text-xl font-semibold mb-2 text-emerald-600">{day}</h3>
+                      <h3 className="text-xl font-semibold mb-2 text-emerald-600">
+                        {day}
+                      </h3>
                       {mealPlan ? (
                         <div className="space-y-2">
                           <div>
@@ -273,15 +298,18 @@ export default function MealPlanDashboard() {
                 })}
               </div>
             </div>
-          ) : mutation.isPending ? (
+          ) : isLoading ? (
             <div className="flex justify-center items-center h-full">
               <Spinner />
             </div>
           ) : (
-            <p className="text-gray-600">Please generate a meal plan to see it here.</p>
+            <p className="text-gray-600">
+              Please generate a meal plan to see it here.
+            </p>
           )}
         </div>
       </div>
     </div>
   );
 }
+

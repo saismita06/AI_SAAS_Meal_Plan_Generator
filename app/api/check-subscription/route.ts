@@ -26,8 +26,13 @@ export async function GET(req: NextRequest) {
     }
 
     return NextResponse.json({ subscriptionActive: true });
-  } catch (err: any) {
-    console.error("check-subscription error:", err.message);
+  }
+    catch (err: unknown) {
+  if (err instanceof Error) {
+    console.error(err.message);
+  } else {
+    console.error('Unknown error');
+  }
     return NextResponse.json(
       { error: "Internal server error" },
       { status: 500 }

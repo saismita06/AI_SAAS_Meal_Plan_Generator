@@ -1,4 +1,4 @@
-import Image from "next/image";
+
 import Link from "next/link";
 
 export default function Home() {
@@ -6,13 +6,15 @@ export default function Home() {
     <div className="px-4 py-8 sm:py-12 lg:py-16 max-w-7xl mx-auto">
       {/* Hero Section */}
       <section className="bg-gradient-to-r from-emerald-400 to-emerald-600 text-white rounded-lg mb-12 p-8 text-center">
-        <h1 className="text-4xl font-bold mb-4">Personalized AI Meal Plans</h1>
-        <p className="text-xl mb-6">
+        <h1 className="text-4xl sm:text-5xl font-bold mb-4">
+          Personalized AI Meal Plans
+        </h1>
+        <p className="text-lg sm:text-xl mb-6 max-w-2xl mx-auto">
           Let our AI do the planning. You focus on cooking and enjoying!
         </p>
         <Link
           href="/sign-up"
-          className="inline-block bg-white text-emerald-500 font-medium px-5 py-3 rounded hover:bg-gray-100 transition-colors"
+          className="inline-block bg-white text-emerald-500 font-medium px-6 py-3 rounded-lg hover:bg-gray-100 transition-colors"
         >
           Get Started
         </Link>
@@ -20,49 +22,32 @@ export default function Home() {
 
       {/* How It Works Section */}
       <section id="how-it-works" className="mb-12">
-        <div className="text-center mb-8">
-          <h2 className="text-3xl font-semibold">How It Works</h2>
-          <p className="mt-2 text-gray-600">
+        <div className="text-center mb-10">
+          <h2 className="text-3xl sm:text-4xl font-semibold">How It Works</h2>
+          <p className="mt-2 text-gray-600 max-w-lg mx-auto">
             Follow these simple steps to get your personalized meal plan
           </p>
         </div>
-        <div className="flex flex-col md:flex-row justify-center items-start space-y-8 md:space-y-0 md:space-x-8">
+
+        <div className="flex flex-col md:flex-row justify-center items-start gap-8">
           {/* Step 1 */}
-          <div className="flex flex-col items-center">
-            <div className="bg-emerald-500 text-white rounded-full h-16 w-16 flex items-center justify-center mb-4">
-              {/* Icon for Step 1 */}
-              <svg
-                xmlns="http://www.w3.org/2000/svg"
-                className="h-8 w-8"
-                fill="none"
-                viewBox="0 0 24 24"
-                stroke="currentColor"
-              >
-                <path
-                  strokeLinecap="round"
-                  strokeLinejoin="round"
-                  strokeWidth={2}
-                  d="M16 7a4 4 0 11-8 0 4 4 0 018 0zM12 14v7m-3-3h6"
-                />
-              </svg>
-            </div>
-            <h3 className="text-xl font-medium mb-2">Create an Account</h3>
-            <p className="text-center text-gray-600">
-              Sign up or sign in to access your personalized meal plans.
-            </p>
-          </div>
+          <Step
+            icon={
+              <path
+                strokeLinecap="round"
+                strokeLinejoin="round"
+                strokeWidth={2}
+                d="M16 7a4 4 0 11-8 0 4 4 0 018 0zM12 14v7m-3-3h6"
+              />
+            }
+            title="Create an Account"
+            description="Sign up or sign in to access your personalized meal plans."
+          />
 
           {/* Step 2 */}
-          <div className="flex flex-col items-center">
-            <div className="bg-emerald-500 text-white rounded-full h-16 w-16 flex items-center justify-center mb-4">
-              {/* Icon for Step 2 */}
-              <svg
-                xmlns="http://www.w3.org/2000/svg"
-                className="h-8 w-8"
-                fill="none"
-                viewBox="0 0 24 24"
-                stroke="currentColor"
-              >
+          <Step
+            icon={
+              <>
                 <path
                   strokeLinecap="round"
                   strokeLinejoin="round"
@@ -75,41 +60,55 @@ export default function Home() {
                   strokeWidth={2}
                   d="M9 12h6"
                 />
-              </svg>
-            </div>
-            <h3 className="text-xl font-medium mb-2">Set Your Preferences</h3>
-            <p className="text-center text-gray-600">
-              Input your dietary preferences and goals to tailor your meal
-              plans.
-            </p>
-          </div>
+              </>
+            }
+            title="Set Your Preferences"
+            description="Input your dietary preferences and goals to tailor your meal plans."
+          />
 
           {/* Step 3 */}
-          <div className="flex flex-col items-center">
-            <div className="bg-emerald-500 text-white rounded-full h-16 w-16 flex items-center justify-center mb-4">
-              {/* Icon for Step 3 */}
-              <svg
-                xmlns="http://www.w3.org/2000/svg"
-                className="h-8 w-8"
-                fill="none"
-                viewBox="0 0 24 24"
-                stroke="currentColor"
-              >
-                <path
-                  strokeLinecap="round"
-                  strokeLinejoin="round"
-                  strokeWidth={2}
-                  d="M5 13l4 4L19 7"
-                />
-              </svg>
-            </div>
-            <h3 className="text-xl font-medium mb-2">Receive Your Meal Plan</h3>
-            <p className="text-center text-gray-600">
-              Get your customized meal plan delivered weekly to your account.
-            </p>
-          </div>
+          <Step
+            icon={
+              <path
+                strokeLinecap="round"
+                strokeLinejoin="round"
+                strokeWidth={2}
+                d="M5 13l4 4L19 7"
+              />
+            }
+            title="Receive Your Meal Plan"
+            description="Get your customized meal plan delivered weekly to your account."
+          />
         </div>
       </section>
+    </div>
+  );
+}
+
+function Step({
+  icon,
+  title,
+  description,
+}: {
+  icon: React.ReactNode;
+  title: string;
+  description: string;
+}) {
+  return (
+    <div className="flex flex-col items-center text-center max-w-xs">
+      <div className="bg-emerald-500 text-white rounded-full h-16 w-16 flex items-center justify-center mb-4">
+        <svg
+          xmlns="http://www.w3.org/2000/svg"
+          className="h-8 w-8"
+          fill="none"
+          viewBox="0 0 24 24"
+          stroke="currentColor"
+        >
+          {icon}
+        </svg>
+      </div>
+      <h3 className="text-xl font-medium mb-2">{title}</h3>
+      <p className="text-gray-600">{description}</p>
     </div>
   );
 }

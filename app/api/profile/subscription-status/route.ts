@@ -40,11 +40,14 @@ export async function GET() {
         subscription_active: !!profile.subscriptionActive
       }
     });
-  } catch (error: any) {
-    console.error("Error fetching subscription status:", error);
-    return NextResponse.json(
-      { error: "Failed to fetch subscription status." },
-      { status: 500 }
-    );
-  }
+  } 
+
+  catch (error) {
+  console.error("Error fetching subscription status:", error);
+  return NextResponse.json(
+    { error: "Failed to fetch subscription status." },
+    { status: 500 }
+  );
+}
+
 }

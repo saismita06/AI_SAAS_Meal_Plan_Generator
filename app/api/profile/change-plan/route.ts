@@ -65,11 +65,16 @@ export async function POST(request: Request) {
     });
 
     return NextResponse.json({ subscription: updatedSubscription });
-  } catch (error: any) {
-    console.error("Error changing subscription plan:", error);
-    return NextResponse.json(
-      { error: error.message || "Failed to change subscription plan." },
-      { status: 500 }
-    );
-  }
+  } 
+
+  catch (error) {
+  // Type assertion to Error type to access message safely
+  const errMsg = error instanceof Error ? error.message : String(error);
+  console.error("Error changing subscription plan:", error);
+  return NextResponse.json(
+    { error: errMsg || "Failed to change subscription plan." },
+    { status: 500 }
+  );
+}
+
 }

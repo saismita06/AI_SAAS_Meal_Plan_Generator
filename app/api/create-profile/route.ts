@@ -50,11 +50,18 @@ export async function POST(request: NextRequest) {
       { message: "Profile created successfully." },
       { status: 201 }
     );
-  } catch (error: any) {
-    console.error("Error in create-profile API:", error);
-    return NextResponse.json(
-      { error: "Internal Server Error." },
-      { status: 500 }
-    );
+  } 
+
+  catch (error: unknown) {
+  if (error instanceof Error) {
+    console.error("Error in create-profile API:", error.message);
+  } else {
+    console.error("Unknown error in create-profile API");
   }
+  return NextResponse.json(
+    { error: "Internal Server Error." },
+    { status: 500 }
+  );
+}
+
 }

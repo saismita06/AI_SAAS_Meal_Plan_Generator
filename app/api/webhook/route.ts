@@ -1,5 +1,4 @@
 
-
 import { NextRequest, NextResponse } from "next/server";
 import Stripe from "stripe";
 import { prisma } from "@/lib/prisma";
@@ -8,7 +7,7 @@ export const runtime = "nodejs";
 export const dynamic = "force-dynamic";
 
 const stripe = new Stripe(process.env.STRIPE_SECRET_KEY!, {
-  apiVersion: "2025-07-30.basil",
+  apiVersion: "2025-08-27.basil",
 });
 
 const endpointSecret = process.env.STRIPE_WEBHOOK_SECRET!;
@@ -25,7 +24,8 @@ export async function POST(req: NextRequest) {
     event = stripe.webhooks.constructEvent(body, sig, endpointSecret);
     console.log("✅ Stripe event:", event.type);
   } catch (err) {
-    console.error("❌ Webhook signature verification failed:", err);
+    const errorMsg = err instanceof Error ? err.message : String(err);
+    console.error("❌ Webhook signature verification failed:", errorMsg);
     return NextResponse.json({ error: "Invalid signature" }, { status: 400 });
   }
 
@@ -66,10 +66,8 @@ export async function POST(req: NextRequest) {
       }
 
       case "invoice.paid": {
-       
-
         const invoice = event.data.object as Stripe.Invoice & { subscription?: string };
-const subscriptionId = invoice.subscription;
+        const subscriptionId = invoice.subscription;
 
         if (!subscriptionId) {
           console.warn("⚠️ Invoice subscription ID is missing");
@@ -136,7 +134,9 @@ const subscriptionId = invoice.subscription;
       }
     }
   } catch (err) {
-    console.error("❌ Error handling webhook event:", err);
+    const errorMsg = err instanceof Error ? err.message : String(err);
+    console.error("❌ Error handling webhook event:", errorMsg);
+    return NextResponse.json({ error: "Internal server error" }, { status: 500 });
   }
 
   return NextResponse.json({ received: true });
