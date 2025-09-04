@@ -10,7 +10,10 @@ const stripe = new Stripe(process.env.STRIPE_SECRET_KEY!, {
   apiVersion: "2025-08-27.basil",
 });
 
-const endpointSecret = process.env.STRIPE_WEBHOOK_SECRET!;
+const endpointSecret =
+  process.env.NODE_ENV === "production"
+    ? process.env.STRIPE_WEBHOOK_SECRET_PROD 
+    : process.env.STRIPE_WEBHOOK_SECRET_CLI;
 
 export async function POST(req: NextRequest) {
   const body = await req.text();
