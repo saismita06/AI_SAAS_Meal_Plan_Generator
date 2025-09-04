@@ -12,8 +12,8 @@ const stripe = new Stripe(process.env.STRIPE_SECRET_KEY!, {
 
 const endpointSecret =
   process.env.NODE_ENV === "production"
-    ? process.env.STRIPE_WEBHOOK_SECRET_PROD 
-    : process.env.STRIPE_WEBHOOK_SECRET_CLI;
+    ? process.env.STRIPE_WEBHOOK_SECRET_PROD!
+    : process.env.STRIPE_WEBHOOK_SECRET_CLI!;
 
 export async function POST(req: NextRequest) {
   const body = await req.text();
